@@ -6,43 +6,47 @@ module Main where
 
 import Protolude
 import Control.Monad
+import Data.Maybe
+import Data.List ((!!))
 import qualified Data.Map as Map
 import qualified Data.List as Lst
 import qualified Data.Text as Txt
 import qualified Control.Arrow as Ar
 import qualified Text.Regex as Re
 import qualified System.Directory as Dir
-import Lib
+import qualified System.Environment as Env
 import Classify
+import ClassifyIO
+import TfIdf
 
 
 main :: IO ()
 main = do
-  trainingSet <- loadTrainingSet
-  --(\(TrainingSet ws) -> mapM_ (putText . show) ws) trainingSet
-  putText ""
+  args <- Env.getArgs
+  let trainingPath = args !! 0
+  trainingSet <- loadTrainingSet trainingPath
+
+  putText ".a trainingSet"
+  putText $ show trainingSet
   
   let trained = buildTfIdf trainingSet
 
-  --line <- getLine
-  --putText . show $ categorise trained line
+  putText ".b"
+  putText $ show trained
 
-  lines <- Txt.lines <$> readFile "./trainingData/todo"
-  let res = map (\l -> (l, categorise trained l)) lines
+  putText ".c"
+  lines <- Txt.lines <$> readFile "test.txt"
+  putText $ show lines
+  putText "--"
+
+  --let res = map (\l -> (l, classify trained $ Record l l)) lines
+  let res = classify trained $ (\l -> Record () l) <$> lines
   mapM_ (putText . show) res
 
-  pure ()
-  
   where
-    categorise :: TrainedData -> Text -> (Category, Double)
-    categorise trained line =
-      let dws = snd $ getWords ("", line) in
-      let ws = Lst.nub $ cleanWord <$> dws in
-      let res = scan trained ws in
-      let sorted = sortBy (\(ca,va) (cb,vb) -> compare vb va) res in
-      case sorted of
-        top@(c,v) : _ -> if v > 0 then top else (Category "", 0.0)
-        _ -> (Category "", 0.0)
+    txtFromRecord :: Record () -> Text
+    txtFromRecord (Record a t) =
+      t
     
     showT :: (Show s) => s -> Text
     showT = show

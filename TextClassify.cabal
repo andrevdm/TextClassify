@@ -38,6 +38,7 @@ executable TextClassify-exe
                      , containers
                      , regex-compat
                      , directory
+                     , optparse-generic
   default-language:    Haskell2010
 
 test-suite TextClassify-test

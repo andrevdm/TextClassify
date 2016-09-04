@@ -1,6 +1,5 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ViewPatterns #-}
 
 module Classify
   (Record (..)
@@ -60,6 +59,6 @@ cleanWord dirty =
                    ] :: [([Char],[Char])] in
 
   let trimmed = Txt.strip dirty in
-  let cleanupPatterns = map (\(f,t) -> (Re.mkRegexWithOpts f True False, t)) cleanupTxt in
-  foldl (\s (f,t) -> Txt.strip $ Txt.pack $ Re.subRegex f (Txt.unpack s) t) (Txt.toLower trimmed) cleanupPatterns
+  let cleanupPatterns = fmap (\(f,t) -> (Re.mkRegexWithOpts f True False, t)) cleanupTxt in
+  foldl (\s (f,t) -> Txt.strip . Txt.pack $ Re.subRegex f (Txt.unpack s) t) (Txt.toLower trimmed) cleanupPatterns
 

@@ -5,8 +5,8 @@ module TfIdf
   (TrainingSet (..)
   ,Category (..)
   ,TrainedData (..)
-  ,buildTfIdf
-  ,scan
+  ,train
+  ,categorise
   ) where
 
 import Protolude
@@ -35,65 +35,69 @@ log10 = logBase 10
 getCategoryTfs :: TrainingSet -> [(Category, Map Term Tf)]
 getCategoryTfs (TrainingSet set) = Ar.second getTf <$> set
 
+-- | Get map of term to term frequency
 getTf :: [Text] -> Map Term Tf
 getTf ts =
+  -- | Count the number of times each term occours
   let freq = Map.fromListWith (+) [(Term t, 1) | t <- ts] in
-  Map.fromList $ Ar.second calcTf <$> Map.toList freq
-  where
-    calcTf :: Double -> Tf
-    calcTf f = Tf $ 1 + f
+  -- | Convert the count into a Tf, add 1 to avoid division by zero errors
+  (\d -> Tf $ d + 1) <$> freq
 
-getTf_IdfMaps :: [(Category, Map Term Tf)] -> [(Category, Map Term (Tf,Idf))]
-getTf_IdfMaps set =
-  map (Ar.second (getIdf set)) set
+-- | Given a [map of term to frequency] get a [map of term to frequency and idf] 
+getTfAndIdfMaps :: [(Category, Map Term Tf)] -> [(Category, Map Term (Tf,Idf))]
+getTfAndIdfMaps set = Ar.second (getTfAndIdf set) <$> set
 
-getIdf :: [(Category, Map Term Tf)] -> Map Term Tf -> Map Term (Tf, Idf)
-getIdf set tfMap =
-  Map.fromList $ map (\(term, tf) -> (term, (tf, calcIdf term))) $ Map.toList tfMap
-  where
-    calcIdf :: Term -> Idf
-    calcIdf t =
-      let count = length $ filter identity $ map (\(cat, termTf) -> Map.member t termTf) set in
-      Idf $ log10 ((fromIntegral (length set) + 1) / fromIntegral (count + 1))
+getTfAndIdf :: [(Category, Map Term Tf)] -> Map Term Tf -> Map Term (Tf, Idf)
+getTfAndIdf set tfMap =
+  Map.fromList . fmap (\(term, tf) -> (term, (tf, calcIdf set term))) $ Map.toList tfMap
+  
+calcIdf :: [(Category, Map Term Tf)] -> Term -> Idf
+calcIdf set term =
+  -- | get the count of the categories containing the term
+  let count = length . filter identity $ Map.member term . snd <$> set in
+  Idf $ log10 ((fromIntegral (length set) + 1) / fromIntegral (count + 1))
 
 getTfIdfMaps :: [(Category, Map Term (Tf,Idf))] -> [(Category, Map Term Double)]
-getTfIdfMaps xs =
-  Ar.second combine <$> xs
-  where
-    combine :: Map Term (Tf,Idf) -> Map Term Double
-    combine m =
-      Map.fromList $ Ar.second combineTfIdf <$> Map.toList m
-
+getTfIdfMaps xs = Ar.second (combineTfIdf <$>) <$> xs
 
 combineTfIdf :: (Tf, Idf) -> Double
 combineTfIdf (Tf t, Idf f) = t * f
 
-buildTfIdf :: TrainingSet -> TrainedData
-buildTfIdf set =
-  let ct = getCategoryTfs set in
-  let mp = getTf_IdfMaps ct in
-  TrainedData { catTf = ct
-              , tf_Idf = mp
-              , tfIdf = getTfIdfMaps mp
-              , idf = Map.fromList $ Ar.second snd <$> concatMap (Map.toList . snd) mp
+train :: TrainingSet -> TrainedData
+train set =
+  let catTermTf = getCategoryTfs set in
+  let catTermTfAndIdf = getTfAndIdfMaps catTermTf in
+  TrainedData { catTf = catTermTf
+              , tf_Idf = catTermTfAndIdf
+              , tfIdf = getTfIdfMaps catTermTfAndIdf
+              , idf = Map.fromList $ Ar.second snd <$> (Map.toList . snd =<< catTermTfAndIdf) 
               }
 
-scan :: TrainedData -> [Text] -> [(Category, Double)]
-scan set terms =
-  let searchTfIdfs = map (Ar.second combineTfIdf) $ Map.toList $ getIdf (catTf set) $ getTf terms in
-  let compared = compareToCategory searchTfIdfs <$> tfIdf set in
+mapPair :: (a -> b) -> [a] -> [(a,b)]
+mapPair fn xs = (\x -> (x, fn x)) <$> xs
+
+categorise :: TrainedData -> [Text] -> [(Category, Double)]
+categorise trained textTerms =
+  let terms = Term <$> textTerms in
+  let termFreqs = getTf textTerms in -- Map Term Tf
+  let catTf_ = catTf trained in
+
+  let mapTermTfIdf = Map.mapWithKey (\term tf -> combineTfIdf (tf, calcIdf catTf_ term)) termFreqs in
+
+  let termIdfs = mapPair (calcIdf catTf_) terms in 
+  let searchTfIdfs = map (Ar.second combineTfIdf) $ Map.toList $ getTfAndIdf catTf_ termFreqs in
+  let compared = compareToCategory searchTfIdfs <$> tfIdf trained in
   compared
 
   where
-    sameCat :: (Term,Double) -> (Term,Double) -> Bool
-    sameCat (at, av) (bt, bv) = at == bt
-
     compareToCategory :: [(Term, Double)] -> (Category, Map Term Double) -> (Category, Double)
     compareToCategory search (cat, tfMap) =
       let ts = Map.toList tfMap in
-      let common = Lst.intersectBy sameCat ts search in
+      let common = Lst.intersectBy sameTerm ts search in
       let commonV = sum $ snd <$> common in
       let allV = sum (snd <$> ts) + sum  (snd <$> search) in
 
       (cat, (commonV * 2) / allV)
 
+    sameTerm :: (Term,Double) -> (Term,Double) -> Bool
+    sameTerm (at, _) (bt, _) = at == bt

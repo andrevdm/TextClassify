@@ -23,7 +23,7 @@ main = do
   args <- Args.getArguments
 
   trainingSet <- loadTrainingSet . Txt.unpack $ Args.trainingPath args
-  let trained = buildTfIdf trainingSet
+  let trained = train trainingSet
 
   case Txt.toLower $ Args.parserType args of
     "lines" -> CLine.classifyLines trained args

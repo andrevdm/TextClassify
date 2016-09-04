@@ -12,14 +12,14 @@ import qualified Data.Text as Txt
 import qualified Data.Map.Strict as Map
 import qualified Data.List as Lst
 import qualified Text.Regex as Re
-import TfIdf (buildTfIdf, scan, TrainingSet, TrainedData, Category (..))
+import TfIdf (categorise, TrainingSet, TrainedData, Category (..))
 
 classify :: TrainedData -> Text -> Maybe (Category, Double)
 classify trained txt =
-  let dws = getWords txt in
-  let ws = Lst.nub $ cleanWord <$> dws in
-  let res = scan trained ws in
-  let sorted = sortBy (\(ca,va) (cb,vb) -> compare vb va) res in
+  let dupWords = getWords txt in
+  let words = Lst.nub $ cleanWord <$> dupWords in
+  let res = categorise trained words in
+  let sorted = sortBy (\(_,va) (_,vb) -> compare vb va) res in
   case sorted of
     top@(c,v) : _ -> if v > 0 then Just top else Nothing
     _ -> Nothing

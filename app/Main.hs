@@ -16,41 +16,9 @@ import           Classify
 import           ClassifyIO
 import           TfIdf
 import qualified Args
+import qualified ClassifyLines as CLine
 
 main :: IO ()
 main = do
-  opts <- Args.getArguments
-
-  trainingSet <- loadTrainingSet . Txt.unpack $ Args.trainingPath opts
-
-  let trained = buildTfIdf trainingSet
-  lines <- Txt.lines <$> readFile (Txt.unpack $ Args.inputPath opts)
-
-  let res = classify trained $ Record () <$> lines
-  mapM_ (putText . show) res
-
-  where
-    txtFromRecord :: Record () -> Text
-    txtFromRecord (Record a t) =
-      t
-
-    showT :: (Show s) => s -> Text
-    showT = show
-
-    prn :: TrainedData -> IO ()
-    prn t = do
-      putText ""
-      putText "tf_idf"
-      putText . showArr $ tf_Idf t
-
-      putText ""
-      putText "tfIdf"
-      putText . showArr $ tfIdf t
-
-      putText ""
-      putText "idf"
-      putText . showT $ idf t
-
-    showArr :: (Show s) => [s] -> Text
-    showArr a =
-      Txt.intercalate "\n" $ showT <$> a
+  args <- Args.getArguments
+  CLine.classifyLines args

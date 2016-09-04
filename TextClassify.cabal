@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Classify
                      , ClassifyIO
+                     , ClassifyLines
                      , TfIdf
                      , Args
   build-depends:       base >= 4.7 && < 5

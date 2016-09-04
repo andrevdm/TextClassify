@@ -2,8 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Classify
-  (Record (..)
-  ,getWords
+  (getWords
   ,classify
   ) where
 
@@ -15,26 +14,15 @@ import qualified Data.List as Lst
 import qualified Text.Regex as Re
 import TfIdf (buildTfIdf, scan, TrainingSet, TrainedData, Category (..))
 
-data Record a = Record a Text deriving (Show)
-
-classify :: TrainedData -> [Record a] -> [(Record a, Maybe (Category, Double))]
-classify trainedData records =
-  classifyRecord trainedData <$> records
-
-  where
-    classifyRecord :: TrainedData -> Record a -> (Record a, Maybe (Category, Double))
-    classifyRecord trainedData (Record a txt) =
-      (Record a txt, categorise' trainedData txt)
-    
-    categorise' :: TrainedData -> Text -> Maybe (Category, Double)
-    categorise' trained line =
-      let dws = getWords line in
-      let ws = Lst.nub $ cleanWord <$> dws in
-      let res = scan trained ws in
-      let sorted = sortBy (\(ca,va) (cb,vb) -> compare vb va) res in
-      case sorted of
-        top@(c,v) : _ -> if v > 0 then Just top else Nothing
-        _ -> Nothing
+classify :: TrainedData -> Text -> Maybe (Category, Double)
+classify trained txt =
+  let dws = getWords txt in
+  let ws = Lst.nub $ cleanWord <$> dws in
+  let res = scan trained ws in
+  let sorted = sortBy (\(ca,va) (cb,vb) -> compare vb va) res in
+  case sorted of
+    top@(c,v) : _ -> if v > 0 then Just top else Nothing
+    _ -> Nothing
 
 getWords :: Text -> [Text]
 getWords txt = 

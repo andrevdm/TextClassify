@@ -6,12 +6,7 @@ module ClassifyLines
   ) where
 
 import           Protolude
-import           Data.Map.Strict (Map)
 import qualified Data.Text as Txt
-import qualified Data.Map.Strict as Map
-import qualified Data.List as Lst
-import qualified System.Directory as Dir
-import qualified Control.Arrow as Ar
 import           TfIdf
 import           Classify
 import           ClassifyIO
@@ -31,5 +26,5 @@ classifyLines args = do
     prn :: (Maybe (Category, Double), Text) -> IO ()
     prn record =
       case record of
-        (Nothing, t) -> putText t
+        (Nothing, t) -> putText $ t <> ": unmatched"
         (Just (Category c, d), t) -> putText $ c <> ": " <> t <> " @" <> show d

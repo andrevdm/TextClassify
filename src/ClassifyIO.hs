@@ -4,6 +4,7 @@
 module ClassifyIO
   (loadTrainingSet
   ,getFiles
+  ,isValidTxtName
   ) where
 
 import Protolude
@@ -12,6 +13,7 @@ import qualified Data.Text as Txt
 import qualified Data.Map.Strict as Map
 import qualified Data.List as Lst
 import qualified System.Directory as Dir
+import qualified Control.Arrow as Ar
 import TfIdf
 import Classify
 
@@ -29,6 +31,6 @@ loadTrainingSet :: FilePath -> IO TrainingSet
 loadTrainingSet path = do
   files <- getFiles path
   fileText <- sequenceA $ readFile <$> ((\p -> path <> "/" <> p) <$> files)
-  let catText = zip (Txt.pack <$> files) fileText
-  let catWords = getWords <$> catText
+  let catText = zip (Category . Txt.pack <$> files) fileText
+  let catWords = Ar.second getWords <$> catText
   TrainingSet <$> pure catWords

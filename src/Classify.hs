@@ -29,7 +29,7 @@ classify trainedData records =
     
     categorise' :: TrainedData -> Text -> Maybe (Category, Double)
     categorise' trained line =
-      let dws = snd $ getWords ("", line) in
+      let dws = getWords line in
       let ws = Lst.nub $ cleanWord <$> dws in
       let res = scan trained ws in
       let sorted = sortBy (\(ca,va) (cb,vb) -> compare vb va) res in
@@ -37,14 +37,14 @@ classify trainedData records =
         top@(c,v) : _ -> if v > 0 then Just top else Nothing
         _ -> Nothing
 
-getWords :: (Text, Text) -> (Category, [Text])
-getWords (cat, txt) = 
+getWords :: Text -> [Text]
+getWords txt = 
   let words = Txt.words txt in
   let cleanWords = Lst.nub $ cleanWord <$> words in
   let nonEmptyWords = filter (not . Txt.null) cleanWords in
-  let category = reverse . drop 4 . reverse $ Txt.unpack cat in
-  (Category $ Txt.pack category, Lst.nub nonEmptyWords)
+  Lst.nub nonEmptyWords
 
+--TODO remove
 cleanWord :: Text -> Text
 cleanWord dirty =
   let cleanupTxt = [ ("^#", "")

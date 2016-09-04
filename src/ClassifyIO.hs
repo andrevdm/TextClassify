@@ -1,6 +1,5 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ViewPatterns #-}
 
 module ClassifyIO
   (loadTrainingSet
@@ -25,7 +24,7 @@ getFiles path = do
   fs <- Dir.getDirectoryContents path
   efs <- filterM (\f -> Dir.doesFileExist (path <> "/" <> f)) fs
   pure $ filter isValidTxtName efs
-  
+
 loadTrainingSet :: FilePath -> IO TrainingSet
 loadTrainingSet path = do
   files <- getFiles path

@@ -1,8 +1,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ViewPatterns #-}
 
-module TfIdf 
+module TfIdf
   (TrainingSet (..)
   ,Category (..)
   ,TrainedData (..)
@@ -24,26 +23,26 @@ newtype Term = Term Text deriving (Show, Eq, Ord)
 
 data TrainingSet = TrainingSet [(Category, [Text])] deriving (Show)
 
-data TrainedData = TrainedData { catTf :: ![(Category, Map Term Tf)]
+data TrainedData = TrainedData { catTf  :: ![(Category, Map Term Tf)]
                                , tf_Idf :: ![(Category, Map Term (Tf,Idf))]
-                               , tfIdf :: ![(Category, Map Term Double)]
-                               , idf :: !(Map Term Idf)
+                               , tfIdf  :: ![(Category, Map Term Double)]
+                               , idf    :: !(Map Term Idf)
                                } deriving (Show)
 
 log10 :: Floating a => a -> a
 log10 = logBase 10
-  
+
 getCategoryTfs :: TrainingSet -> [(Category, Map Term Tf)]
-getCategoryTfs (TrainingSet set) = (Ar.second getTf) <$> set
+getCategoryTfs (TrainingSet set) = Ar.second getTf <$> set
 
 getTf :: [Text] -> Map Term Tf
 getTf ts =
   let freq = Map.fromListWith (+) [(Term t, 1) | t <- ts] in
-  Map.fromList $ (Ar.second calcTf) <$> Map.toList freq
+  Map.fromList $ Ar.second calcTf <$> Map.toList freq
   where
     calcTf :: Double -> Tf
     calcTf f = Tf $ 1 + f
-  
+
 getTf_IdfMaps :: [(Category, Map Term Tf)] -> [(Category, Map Term (Tf,Idf))]
 getTf_IdfMaps set =
   map (Ar.second (getIdf set)) set
@@ -56,19 +55,19 @@ getIdf set tfMap =
     calcIdf t =
       let count = length $ filter identity $ map (\(cat, termTf) -> Map.member t termTf) set in
       Idf $ log10 ((fromIntegral (length set) + 1) / fromIntegral (count + 1))
-  
+
 getTfIdfMaps :: [(Category, Map Term (Tf,Idf))] -> [(Category, Map Term Double)]
 getTfIdfMaps xs =
   Ar.second combine <$> xs
   where
     combine :: Map Term (Tf,Idf) -> Map Term Double
     combine m =
-      Map.fromList $ (Ar.second combineTfIdf) <$> Map.toList m
+      Map.fromList $ Ar.second combineTfIdf <$> Map.toList m
 
 
 combineTfIdf :: (Tf, Idf) -> Double
 combineTfIdf (Tf t, Idf f) = t * f
-  
+
 buildTfIdf :: TrainingSet -> TrainedData
 buildTfIdf set =
   let ct = getCategoryTfs set in
@@ -76,19 +75,19 @@ buildTfIdf set =
   TrainedData { catTf = ct
               , tf_Idf = mp
               , tfIdf = getTfIdfMaps mp
-              , idf = Map.fromList $ (Ar.second snd) <$> concatMap (Map.toList . snd) mp
+              , idf = Map.fromList $ Ar.second snd <$> concatMap (Map.toList . snd) mp
               }
 
 scan :: TrainedData -> [Text] -> [(Category, Double)]
 scan set terms =
   let searchTfIdfs = map (Ar.second combineTfIdf) $ Map.toList $ getIdf (catTf set) $ getTf terms in
-  let compared = (compareToCategory searchTfIdfs) <$> tfIdf set in
+  let compared = compareToCategory searchTfIdfs <$> tfIdf set in
   compared
-    
+
   where
     sameCat :: (Term,Double) -> (Term,Double) -> Bool
     sameCat (at, av) (bt, bv) = at == bt
-    
+
     compareToCategory :: [(Term, Double)] -> (Category, Map Term Double) -> (Category, Double)
     compareToCategory search (cat, tfMap) =
       let ts = Map.toList tfMap in
@@ -97,4 +96,4 @@ scan set terms =
       let allV = sum (snd <$> ts) + sum  (snd <$> search) in
 
       (cat, (commonV * 2) / allV)
- 
+

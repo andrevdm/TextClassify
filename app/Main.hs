@@ -1,6 +1,5 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ViewPatterns #-}
 
 module Main where
 
@@ -28,7 +27,7 @@ main = do
 
   --putText ".a trainingSet"
   --putText $ show trainingSet
-  
+
   let trained = buildTfIdf trainingSet
 
   --putText ".b"
@@ -37,16 +36,16 @@ main = do
   --putText ".c"
   lines <- Txt.lines <$> readFile "test.txt"
   --putText $ show lines
-  --putText "--"
+  --putText "--
 
-  let res = classify trained $ (\l -> Record () l) <$> lines
+  let res = classify trained $ Record () <$> lines
   mapM_ (putText . show) res
 
   where
     txtFromRecord :: Record () -> Text
     txtFromRecord (Record a t) =
       t
-    
+
     showT :: (Show s) => s -> Text
     showT = show
 

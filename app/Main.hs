@@ -21,4 +21,10 @@ import qualified ClassifyLines as CLine
 main :: IO ()
 main = do
   args <- Args.getArguments
-  CLine.classifyLines args
+
+  trainingSet <- loadTrainingSet . Txt.unpack $ Args.trainingPath args
+  let trained = buildTfIdf trainingSet
+
+  case Txt.toLower $ Args.parserType args of
+    "lines" -> CLine.classifyLines trained args
+    x -> putText $ "unknown parser " <> x

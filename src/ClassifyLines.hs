@@ -12,11 +12,8 @@ import           Classify
 import           ClassifyIO
 import qualified Args
 
-classifyLines :: Args.Arguments -> IO ()
-classifyLines args = do
-  trainingSet <- loadTrainingSet . Txt.unpack $ Args.trainingPath args
-
-  let trained = buildTfIdf trainingSet
+classifyLines :: TrainedData -> Args.Arguments -> IO ()
+classifyLines trained args = do
   lines <- Txt.lines <$> readFile (Txt.unpack $ Args.inputPath args)
   
   let res = (\l -> (classify trained l, l)) <$> lines

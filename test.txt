@@ -1,7 +1,10 @@
-a
-aa
-bbb
-a
-aa
-bbb
-
+null
+interface
+case
+infix
+data
+newtype
+interface
+object
+null data infix case
+case of

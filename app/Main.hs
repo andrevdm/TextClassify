@@ -26,20 +26,19 @@ main = do
   let trainingPath = args !! 0
   trainingSet <- loadTrainingSet trainingPath
 
-  putText ".a trainingSet"
-  putText $ show trainingSet
+  --putText ".a trainingSet"
+  --putText $ show trainingSet
   
   let trained = buildTfIdf trainingSet
 
-  putText ".b"
-  putText $ show trained
+  --putText ".b"
+  --putText $ show trained
 
-  putText ".c"
+  --putText ".c"
   lines <- Txt.lines <$> readFile "test.txt"
-  putText $ show lines
-  putText "--"
+  --putText $ show lines
+  --putText "--"
 
-  --let res = map (\l -> (l, classify trained $ Record l l)) lines
   let res = classify trained $ (\l -> Record () l) <$> lines
   mapM_ (putText . show) res
 

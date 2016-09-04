@@ -1,0 +1,29 @@
+as
+case
+class
+data
+data family
+data instance
+default
+deriving
+deriving instance
+do
+forall
+foreign
+hiding
+if
+import
+infix infixl infixr
+instance
+let in
+mdo
+module
+newtype
+proc
+qualified
+rec
+type
+type family
+type instance
+where
+case

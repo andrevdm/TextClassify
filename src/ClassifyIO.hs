@@ -28,7 +28,8 @@ getFiles path = do
   
 loadTrainingSet :: FilePath -> IO TrainingSet
 loadTrainingSet path = do
-  let files = getFiles path
-  let catText = mapM getText =<< files
-  let catWords = mapM (pure . getWords) =<< catText
-  TrainingSet <$> catWords
+  files <- getFiles path
+  fileText <- sequenceA $ readFile <$> ((\p -> path <> "/" <> p) <$> files)
+  let catText = zip (Txt.pack <$> files) fileText
+  let catWords = getWords <$> catText
+  TrainingSet <$> pure catWords

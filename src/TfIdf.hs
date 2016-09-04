@@ -24,21 +24,15 @@ newtype Term = Term Text deriving (Show, Eq, Ord)
 
 data TrainingSet = TrainingSet [(Category, [Text])] deriving (Show)
 
-data TrainedData = TrainedData { catTf :: [(Category, Map Term Tf)]
-                               , tf_Idf :: [(Category, Map Term (Tf,Idf))]
-                               , tfIdf :: [(Category, Map Term Double)]
-                               , idf :: Map Term Idf
+data TrainedData = TrainedData { catTf :: ![(Category, Map Term Tf)]
+                               , tf_Idf :: ![(Category, Map Term (Tf,Idf))]
+                               , tfIdf :: ![(Category, Map Term Double)]
+                               , idf :: !(Map Term Idf)
                                } deriving (Show)
 
 log10 :: Floating a => a -> a
 log10 = logBase 10
   
-trainingSet :: TrainingSet
-trainingSet = TrainingSet [ (Category "A", ["a", "b", "a"])
-                          , (Category "B", ["b"])
-                          , (Category "C", ["d", "a", "e", "e"])
-                          ]
-
 getCategoryTfs :: TrainingSet -> [(Category, Map Term Tf)]
 getCategoryTfs (TrainingSet set) = (Ar.second getTf) <$> set
 
@@ -92,9 +86,6 @@ scan set terms =
   compared
     
   where
-    showT :: (Show s) => s -> Text
-    showT = show
-
     sameCat :: (Term,Double) -> (Term,Double) -> Bool
     sameCat (at, av) (bt, bv) = at == bt
     
@@ -106,3 +97,4 @@ scan set terms =
       let allV = sum (snd <$> ts) + sum  (snd <$> search) in
 
       (cat, (commonV * 2) / allV)
+ 

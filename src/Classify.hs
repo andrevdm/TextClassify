@@ -5,7 +5,6 @@
 module Classify
   (Record (..)
   ,getWords
-  ,getText
   ,classify
   ) where
 
@@ -26,7 +25,7 @@ classify trainedData records =
   where
     classifyRecord :: TrainedData -> Record a -> (Record a, Maybe (Category, Double))
     classifyRecord trainedData (Record a txt) =
-      (Record a txt, Nothing)
+      (Record a txt, categorise' trainedData txt)
     
     categorise' :: TrainedData -> Text -> Maybe (Category, Double)
     categorise' trained line =
@@ -37,11 +36,6 @@ classify trainedData records =
       case sorted of
         top@(c,v) : _ -> if v > 0 then Just top else Nothing
         _ -> Nothing
-
-getText :: FilePath -> IO (Text, Text)
-getText path = do
-  txt <- readFile $ "./trainingData/" <> path
-  pure (Txt.pack path, txt)
 
 getWords :: (Text, Text) -> (Category, [Text])
 getWords (cat, txt) = 

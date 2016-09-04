@@ -7,15 +7,15 @@ module ClassifyIO
   ,isValidTxtName
   ) where
 
-import Protolude
-import Data.Map.Strict (Map)
+import           Protolude
+import           Data.Map.Strict (Map)
 import qualified Data.Text as Txt
 import qualified Data.Map.Strict as Map
 import qualified Data.List as Lst
 import qualified System.Directory as Dir
 import qualified Control.Arrow as Ar
-import TfIdf
-import Classify
+import           TfIdf
+import           Classify
 
 isValidTxtName :: FilePath -> Bool
 isValidTxtName name =

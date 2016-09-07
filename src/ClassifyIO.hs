@@ -31,7 +31,7 @@ loadTrainingSet :: FilePath -> IO TrainingSet
 loadTrainingSet path = do
   files <- getFiles path
   fileText <- sequenceA $ readFile <$> ((\p -> path <> "/" <> p) <$> files)
-  let catText = zip (buildCatName <$> files) fileText
+  let catText = zip (buildCatName <$> files) (Txt.toLower <$> fileText)
   let catWords = Ar.second getWords <$> catText
   TrainingSet <$> pure catWords
 

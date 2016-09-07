@@ -53,9 +53,9 @@ getOptions = do
           hSetBuffering inp NoBuffering
           pure $ cleanText inp outp
         Nothing ->
-          pure pure
+          pure $ pure . Txt.toLower
 
     cleanText :: Handle -> Handle -> Text -> IO Text
     cleanText inp outp txt = do
-      hPutStrLn inp $ Txt.unpack txt
+      hPutStrLn inp $ Txt.unpack (Txt.toLower txt)
       pure . Txt.pack =<< hGetLine outp

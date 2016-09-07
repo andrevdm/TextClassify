@@ -12,7 +12,7 @@ import           Classify
 import           ClassifyIO
 import qualified Args
 
-classifyLines :: TrainedData -> Args.Arguments -> Text -> IO ()
+classifyLines :: TrainedData -> Args.Options -> Text -> IO ()
 classifyLines trained args inputData = do
   let lines = Txt.lines inputData
   let res = (\l -> (classify trained l, l)) <$> lines

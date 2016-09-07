@@ -20,7 +20,7 @@ import qualified ClassifyLines as CLine
 
 main :: IO ()
 main = do
-  args <- Args.getArguments
+  args <- Args.getOptions
 
   trainingSet <- loadTrainingSet . Txt.unpack $ Args.trainingPath args
   let trained = train trainingSet

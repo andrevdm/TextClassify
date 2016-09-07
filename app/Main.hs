@@ -10,7 +10,6 @@ import qualified Data.Map as Map
 import qualified Data.List as Lst
 import qualified Data.Text as Txt
 import qualified Control.Arrow as Ar
-import qualified Text.Regex as Re
 import qualified System.Directory as Dir
 import           Classify
 import           ClassifyIO

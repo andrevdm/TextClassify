@@ -13,14 +13,20 @@ import           ClassifyIO
 import qualified Args
 
 classifyLines :: TrainedData -> Args.Options -> Text -> IO ()
-classifyLines trained args inputData = do
+classifyLines trained opts inputData = do
   let lines = Txt.lines inputData
-  let res = (\l -> (classify trained l, l)) <$> lines
+  res <- sequenceA $ classifyLine <$> lines
   mapM_ prn res
 
   where
-    prn :: (Maybe (Category, Double), Text) -> IO ()
+    classifyLine :: Text -> IO (Maybe (Category, Double), Text, Text )
+    classifyLine txt = do
+      cleaned <- Args.txtCleaner opts txt 
+      let classified = classify opts trained cleaned 
+      pure (classified, txt, cleaned)
+
+    prn :: (Maybe (Category, Double), Text, Text) -> IO ()
     prn record =
       case record of
-        (Nothing, t) -> putText $ "unmatched: " <> t
-        (Just (Category c, d), t) -> putText $ c <> ": " <> t <> " @" <> show d
+        (Nothing, t, cl) -> putText $ "unmatched: " <> t <> " ** " <> cl
+        (Just (Category c, d), t, cl) -> putText $ c <> ": " <> t <> " @" <> show d <> " ** " <> cl

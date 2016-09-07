@@ -12,10 +12,9 @@ import           Classify
 import           ClassifyIO
 import qualified Args
 
-classifyLines :: TrainedData -> Args.Arguments -> IO ()
-classifyLines trained args = do
-  lines <- Txt.lines <$> readFile (Txt.unpack $ Args.inputPath args)
-  
+classifyLines :: TrainedData -> Args.Arguments -> Text -> IO ()
+classifyLines trained args inputData = do
+  let lines = Txt.lines inputData
   let res = (\l -> (classify trained l, l)) <$> lines
   mapM_ prn res
 
@@ -23,5 +22,5 @@ classifyLines trained args = do
     prn :: (Maybe (Category, Double), Text) -> IO ()
     prn record =
       case record of
-        (Nothing, t) -> putText $ t <> ": unmatched"
+        (Nothing, t) -> putText $ "unmatched: " <> t
         (Just (Category c, d), t) -> putText $ c <> ": " <> t <> " @" <> show d

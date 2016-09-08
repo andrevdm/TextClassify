@@ -11,9 +11,11 @@ import           TfIdf
 import           Classify
 import           ClassifyIO
 import           Data.Csv
+import           System.IO
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Lazy.Char8 as BL8
 import qualified Data.Vector as V
+import           Data.Vector ( (!?) )
 import qualified Args
 
 classifyCsv :: TrainedData -> Args.Options -> IO ()
@@ -23,19 +25,32 @@ classifyCsv trained opts = do
   case parsed of
     Right csv ->
       case safeHead csv of
-        Nothing ->
-          pure ()
-        Just csvHeader -> do
-          writeCsvLine csvHeader
-          --classifyCsvLines <$> (V.tail csv)
-          pure ()
+        Nothing -> pure ()
+        Just csvHeader -> classifyCsvLines csvHeader $ V.tail csv
     Left err ->
-      putText $ "CSV error: " <> Txt.pack err
+      hPutStrLn stderr $ "CSV error: " <> err
 
   where
-    classifyCsvLines :: [Text] -> IO ()
-    classifyCsvLines line = do
-      pure ()
+    classifyCsvLines :: [Text] -> V.Vector [Text] -> IO ()
+    classifyCsvLines csvHeader rest = do
+      writeCsvLine (csvHeader <> ["_Category", "_TfIdf", "_MatchText"])
+      case getDataCol opts of
+        Just dataIdx -> mapM_ (decorateAndWriteCsvLine dataIdx) rest
+        Nothing -> hPutStrLn stderr "* No data column specified in the potps option"
+    
+    decorateAndWriteCsvLine :: Int -> [Text] -> IO ()
+    decorateAndWriteCsvLine dataIdx line = do
+      case take 1 . drop (dataIdx - 1) $ line of
+        [val] -> do
+          cleaned <- Args.txtCleaner opts val
+          let classified = classify opts trained cleaned 
+          case classified of
+            Just (Category cat, tfidf) -> 
+              writeCsvLine (line <> [cat, show tfidf, cleaned])
+            Nothing -> 
+              writeCsvLine (line <> ["", "0", cleaned])
+        _ ->
+          hPutStrLn stderr $ "No column at index" <> show dataIdx
 
     writeCsvLine :: [Text] -> IO ()
     writeCsvLine csv =
@@ -44,3 +59,13 @@ classifyCsv trained opts = do
     safeHead :: V.Vector a -> Maybe a
     safeHead v =
       if V.null v then Nothing else Just $ V.head v
+
+    getDataCol :: Args.Options -> Maybe Int
+    getDataCol opts =
+      case Args.parserOptions opts of
+        Nothing -> 
+          Nothing
+        Just optsStr ->
+          case (reads . Txt.unpack $ optsStr :: [(Int, [Char])]) of
+            [(col,[])] -> Just col
+            _ -> Nothing

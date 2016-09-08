@@ -16,6 +16,7 @@ import           ClassifyIO
 import           TfIdf
 import qualified Args
 import qualified ClassifyLines as CLine
+import qualified ClassifyCsv as CCsv
 
 main :: IO ()
 main = do
@@ -26,4 +27,5 @@ main = do
 
   case Txt.toLower $ Args.parserType args of
     "lines" -> CLine.classifyLines trained args 
+    "csv" -> CCsv.classifyCsv trained args 
     x -> putText $ "unknown parser " <> x

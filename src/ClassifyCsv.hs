@@ -10,7 +10,7 @@ import qualified Data.Text as Txt
 import           TfIdf
 import           Classify
 import           ClassifyIO
-import           Data.Csv
+import           Data.Csv as Csv
 import           System.IO
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Lazy.Char8 as BL8
@@ -53,8 +53,8 @@ classifyCsv trained opts = do
           hPutStrLn stderr $ "No column at index" <> show dataIdx
 
     writeCsvLine :: [Text] -> IO ()
-    writeCsvLine csv =
-      putText $ Txt.intercalate "," csv -- TODO Format
+    writeCsvLine csv = 
+      putText . Txt.stripEnd . Txt.pack . BL8.unpack . encode $ [Txt.strip <$> csv]
 
     safeHead :: V.Vector a -> Maybe a
     safeHead v =

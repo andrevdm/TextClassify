@@ -24,10 +24,6 @@ main = do
   trainingSet <- loadTrainingSet . Txt.unpack $ Args.trainingPath args
   let trained = train trainingSet
 
-  inputData <- case Args.inputPath args of
-                 Just path -> readFile (Txt.unpack path)
-                 Nothing -> getContents 
-
   case Txt.toLower $ Args.parserType args of
-    "lines" -> CLine.classifyLines trained args inputData
+    "lines" -> CLine.classifyLines trained args 
     x -> putText $ "unknown parser " <> x

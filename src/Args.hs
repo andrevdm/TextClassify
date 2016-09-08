@@ -25,23 +25,29 @@ data Arguments = Arguments {train :: [Char] <?> "Path to training data"
 instance ParseRecord Arguments
 
 data Options = Options {trainingPath :: Text
-                       ,inputPath :: Maybe Text
                        ,parserType :: Text
                        ,parserOptions :: Maybe Text
                        ,txtCleaner :: Text -> IO Text
+                       ,hin :: Handle
+                       ,hout :: Handle
                        } 
 
 getOptions :: IO Options
 getOptions = do
   args <- getRecord "TextClassifierArgs"
   cleaner <- getCleaner (unHelpful (clean args)) 
+  hin_ <- case unHelpful $ input args of
+             Just t -> 
+               openFile t ReadMode
+             Nothing ->
+                pure stdin
+
   pure Options {trainingPath = Txt.pack $ unHelpful (train args)
-               ,inputPath = case unHelpful $ input args of
-                              Just t -> Just $ Txt.pack t
-                              Nothing -> Nothing
                ,parserType = fromMaybe "lines" $ unHelpful (parser args)
                ,parserOptions = unHelpful (popts args)
                ,txtCleaner = cleaner
+               ,hout = stdout
+               ,hin = hin_
                }
   where
     getCleaner :: Maybe Text -> IO (Text -> IO Text)

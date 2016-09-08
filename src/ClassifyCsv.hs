@@ -16,9 +16,10 @@ import qualified Data.ByteString.Lazy.Char8 as BL8
 import qualified Data.Vector as V
 import qualified Args
 
-classifyCsv :: TrainedData -> Args.Options -> Text -> IO ()
-classifyCsv trained opts inputData = do
-  let parsed = (decode NoHeader $ BL8.pack (Txt.unpack inputData)) :: Either [Char] (V.Vector [Text])
+classifyCsv :: TrainedData -> Args.Options -> IO ()
+classifyCsv trained opts = do
+  contents <- BL.hGetContents (Args.hin opts)
+  let parsed = decode NoHeader contents :: Either [Char] (V.Vector [Text])
   case parsed of
     Right csv ->
       case safeHead csv of

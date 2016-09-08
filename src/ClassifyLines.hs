@@ -7,6 +7,7 @@ module ClassifyLines
 
 import           Protolude
 import qualified Data.Text as Txt
+import qualified Data.List as Lst
 import           System.IO as IO
 import           TfIdf
 import           Classify
@@ -16,8 +17,8 @@ import qualified Args
 classifyLines :: TrainedData -> Args.Options -> IO ()
 classifyLines trained opts = do
   contents <- IO.hGetContents (Args.hin opts) 
-  let lines = Txt.lines (Txt.pack contents)
-  res <- sequenceA $ classifyLine <$> lines
+  let lines = Lst.lines contents
+  res <- sequenceA $ classifyLine . Txt.pack <$> lines
   mapM_ prn res
 
   where

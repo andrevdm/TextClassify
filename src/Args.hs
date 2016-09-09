@@ -18,7 +18,7 @@ import           Options.Generic
 
 data Arguments = Arguments {train :: [Char] <?> "Path to training data"
                            ,input :: Maybe [Char] <?> "Input file to categorise. If missing stdin will be used"
-                           ,parser :: Maybe Text <?> "Parser type, defaults to text"
+                           ,parser :: Maybe Text <?> "Parser type, defaults to lines. Options are lines/detail/csv"
                            ,popts :: Maybe Text <?> "Parser options"
                            ,clean :: Maybe Text <?> "Options name of text cleaner - see docs"
                            } deriving (Generic, Show)

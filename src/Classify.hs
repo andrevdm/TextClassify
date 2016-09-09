@@ -4,6 +4,7 @@
 module Classify
   (getWords
   ,classify
+  ,classifyDetail
   ) where
 
 import Protolude
@@ -16,13 +17,16 @@ import TfIdf
 
 classify :: Args.Options -> TrainedData -> Text -> Maybe (Category, Double)
 classify opts trained txt =
+  case classifyDetail opts trained txt of
+    top@(c,v) : _ -> if v > 0 then Just top else Nothing
+    _ -> Nothing
+
+classifyDetail :: Args.Options -> TrainedData -> Text -> [(Category, Double)]
+classifyDetail opts trained txt =
   let dupWords = getWords txt in
   let words = Lst.nub dupWords in
   let res = categoriseWords trained words in
-  let sorted = sortBy (\(_,va) (_,vb) -> compare vb va) res in
-  case sorted of
-    top@(c,v) : _ -> if v > 0 then Just top else Nothing
-    _ -> Nothing
+  sortBy (\(_,va) (_,vb) -> compare vb va) res
 
 getWords :: Text -> [Text]
 getWords txt = 

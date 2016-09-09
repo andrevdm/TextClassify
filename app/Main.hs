@@ -26,6 +26,7 @@ main = do
   let trained = train trainingSet
 
   case Txt.toLower $ Args.parserType args of
-    "lines" -> CLine.classifyLines trained args 
+    "lines" -> CLine.classifyLinesSimple trained args 
+    "detail" -> CLine.classifyLinesDetail trained args 
     "csv" -> CCsv.classifyCsv trained args 
     x -> putText $ "unknown parser " <> x

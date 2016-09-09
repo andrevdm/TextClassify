@@ -2,7 +2,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module ClassifyLines
-  (classifyLines
+  (classifyLinesDetail
+  ,classifyLinesSimple
   ) where
 
 import           Protolude
@@ -14,22 +15,45 @@ import           Classify
 import           ClassifyIO
 import qualified Args
 
-classifyLines :: TrainedData -> Args.Options -> IO ()
+classifyLines :: TrainedData -> Args.Options -> IO [([(Category, Double)], Text, Text )]
 classifyLines trained opts = do
   contents <- IO.hGetContents (Args.hin opts) 
   let lines = Lst.lines contents
-  res <- sequenceA $ classifyLine . Txt.pack <$> lines
+  sequenceA $ classifyLine . Txt.pack <$> lines
+
+  where
+    classifyLine :: Text -> IO ([(Category, Double)], Text, Text )
+    classifyLine txt = do
+      cleaned <- Args.txtCleaner opts txt 
+      let classified = classifyDetail opts trained cleaned 
+      let classifiedNonZero = filter (\(c,v) -> v > 0) classified
+
+      pure (classifiedNonZero, txt, cleaned)
+
+classifyLinesDetail :: TrainedData -> Args.Options -> IO ()
+classifyLinesDetail trained opts = do
+  res <- classifyLines trained opts
   mapM_ prn res
 
   where
-    classifyLine :: Text -> IO (Maybe (Category, Double), Text, Text )
-    classifyLine txt = do
-      cleaned <- Args.txtCleaner opts txt 
-      let classified = classify opts trained cleaned 
-      pure (classified, txt, cleaned)
+    prn :: ([(Category, Double)], Text, Text) -> IO ()
+    prn (cats, txt, cleaned) = do
+      putText txt
+      putText $ "  > " <> cleaned 
+      mapM_ prnCategory cats
 
-    prn :: (Maybe (Category, Double), Text, Text) -> IO ()
-    prn record =
-      case record of
-        (Nothing, t, cl) -> putText $ "unmatched: " <> t <> " ** " <> cl
-        (Just (Category c, d), t, cl) -> putText $ c <> ": " <> t <> " @" <> show d <> " ** " <> cl
+    prnCategory :: (Category, Double) -> IO ()
+    prnCategory (Category cat, tfidf) =
+      putText $ "  = " <> cat <> ": " <> show tfidf
+
+classifyLinesSimple :: TrainedData -> Args.Options -> IO ()
+classifyLinesSimple trained opts = do
+  res <- classifyLines trained opts
+  mapM_ prn res
+
+  where
+    prn :: ([(Category, Double)], Text, Text) -> IO ()
+    prn (cats, t, cl) =
+      case Lst.take 1 cats of
+        [] -> putText $ "unmatched: " <> t <> " ** " <> cl
+        [(Category c, d)] -> putText $ c <> ": " <> t <> " @" <> show d <> " ** " <> cl

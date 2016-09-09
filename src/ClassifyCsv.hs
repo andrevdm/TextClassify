@@ -48,7 +48,7 @@ classifyCsv trained opts = do
             Just (Category cat, tfidf) -> 
               writeCsvLine (line <> [cat, show tfidf, cleaned])
             Nothing -> 
-              writeCsvLine (line <> ["", "0", cleaned])
+              writeCsvLine (line <> ["-", "0", cleaned])
         _ ->
           hPutStrLn stderr $ "No column at index" <> show dataIdx
 

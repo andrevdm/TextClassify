@@ -33,14 +33,14 @@ classifyLines trained opts = do
 classifyLinesDetail :: TrainedData -> Args.Options -> IO ()
 classifyLinesDetail trained opts = do
   res <- classifyLines trained opts
-  mapM_ prn res
+  traverse_ prn res
 
   where
     prn :: ([(Category, Double)], Text, Text) -> IO ()
     prn (cats, txt, cleaned) = do
       putText txt
       putText $ "  > " <> cleaned 
-      mapM_ prnCategory cats
+      traverse_ prnCategory cats
 
     prnCategory :: (Category, Double) -> IO ()
     prnCategory (Category cat, tfidf) =

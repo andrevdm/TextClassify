@@ -34,7 +34,7 @@ data Options = Options {trainingPath :: Text
 
 getOptions :: IO Options
 getOptions = do
-  args <- getRecord "txtcls - Text Classifier. Version 0.1.0"
+  args <- getRecord "txtcls - Text Classifier. Version 0.1.1"
   cleaner <- getCleaner (unHelpful (clean args)) 
   hin_ <- case unHelpful $ input args of
              Just t -> 

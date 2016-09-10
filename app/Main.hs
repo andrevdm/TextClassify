@@ -20,13 +20,13 @@ import qualified ClassifyCsv as CCsv
 
 main :: IO ()
 main = do
-  args <- Args.getOptions
+  opts <- Args.getOptions
 
-  trainingSet <- loadTrainingSet . Txt.unpack $ Args.trainingPath args
+  trainingSet <- loadTrainingSet opts . Txt.unpack $ Args.trainingPath opts
   let trained = train trainingSet
 
-  case Txt.toLower $ Args.parserType args of
-    "lines" -> CLine.classifyLinesSimple trained args 
-    "detail" -> CLine.classifyLinesDetail trained args 
-    "csv" -> CCsv.classifyCsv trained args 
+  case Txt.toLower $ Args.parserType opts of
+    "lines" -> CLine.classifyLinesSimple trained opts 
+    "detail" -> CLine.classifyLinesDetail trained opts 
+    "csv" -> CCsv.classifyCsv trained opts 
     x -> putText $ "unknown parser " <> x

@@ -14,6 +14,7 @@ import qualified Data.Map.Strict as Map
 import qualified Data.List as Lst
 import qualified System.Directory as Dir
 import qualified Control.Arrow as Ar
+import qualified Args
 import           TfIdf
 import           Classify
 
@@ -27,15 +28,20 @@ getFiles path = do
   efs <- filterM (\f -> Dir.doesFileExist (path <> "/" <> f)) fs
   pure $ filter isValidTxtName efs
 
-loadTrainingSet :: FilePath -> IO TrainingSet
-loadTrainingSet path = do
+loadTrainingSet :: Args.Options -> FilePath -> IO TrainingSet
+loadTrainingSet opts path = do
   files <- getFiles path
   fileText <- sequenceA $ readFile <$> ((\p -> path <> "/" <> p) <$> files)
-  let catText = zip (buildCatName <$> files) (Txt.toLower <$> fileText)
+  cleanText <- sequenceA $ (Args.txtCleaner opts . noLines) <$> fileText
+
+  let catText = zip (buildCatName <$> files) (Txt.toLower <$> cleanText)
   let catWords = Ar.second getWords <$> catText
   TrainingSet <$> pure catWords
 
   where
+    noLines :: Text -> Text
+    noLines t = Txt.replace "\r" " " (Txt.replace "\n" " " t) 
+
     buildCatName :: FilePath -> Category
     buildCatName path = 
       let n = Txt.pack path in

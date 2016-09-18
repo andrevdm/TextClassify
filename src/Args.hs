@@ -34,7 +34,7 @@ data Options = Options {trainingPath :: Text
 
 getOptions :: IO Options
 getOptions = do
-  args <- getRecord "txtcls - Text Classifier. Version 0.1.1"
+  args <- getRecord "txtcls - Text Classifier. Version 0.1.2"
   cleaner <- getCleaner (unHelpful (clean args)) 
   hin_ <- case unHelpful $ input args of
              Just t -> 
@@ -51,12 +51,12 @@ getOptions = do
                }
   where
     getCleaner :: Maybe Text -> IO (Text -> IO Text)
-    getCleaner mcmd = do
+    getCleaner mcmd = 
       case mcmd of
         Just cmd -> do
           (Just inp, Just outp, _, phandle) <- createProcess (proc (Txt.unpack cmd) []) { std_out = CreatePipe, std_in = CreatePipe }
           hSetBuffering outp NoBuffering
-          hSetBuffering inp NoBuffering
+          hSetBuffering inp LineBuffering
           pure $ cleanText inp outp
         Nothing ->
           pure $ pure . Txt.toLower

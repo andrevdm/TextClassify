@@ -5,6 +5,10 @@ module Classify
   (getWords
   ,classify
   ,classifyDetail
+  ,ParsedLine (..)
+  ,CleanedLine (..)
+  ,RawText (..)
+  ,CleanedText (..)
   ) where
 
 import Protolude
@@ -15,14 +19,19 @@ import qualified Data.List as Lst
 import qualified Args
 import TfIdf 
 
+newtype RawText = RawText Text deriving (Show)
+newtype CleanedText = CleanedText Text deriving (Show)
+data ParsedLine a = ParsedLine RawText a deriving (Show)
+data CleanedLine a = CleanedLine RawText CleanedText a deriving (Show) 
+
 classify :: Args.Options -> TrainedData -> Text -> Maybe (Category, Double)
 classify opts trained txt =
-  case classifyDetail opts trained txt of
+  case classifyDetail trained txt of
     top@(c,v) : _ -> if v > 0 then Just top else Nothing
     _ -> Nothing
 
-classifyDetail :: Args.Options -> TrainedData -> Text -> [(Category, Double)]
-classifyDetail opts trained txt =
+classifyDetail :: TrainedData -> Text -> [(Category, Double)]
+classifyDetail trained txt =
   let dupWords = getWords txt in
   let words = Lst.nub dupWords in
   let res = categoriseWords trained words in

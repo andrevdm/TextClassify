@@ -16,6 +16,7 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Lazy.Char8 as BL8
 import qualified Data.Vector as V
 import           Data.Vector ( (!?) )
+import           Text.Printf (printf)
 import qualified Args
 
 createHeader :: Text -> Text
@@ -29,7 +30,7 @@ parseCsvLine trained opts line =
   case parsed of
     Right csv ->
       case safeHead csv of
-        Nothing -> Left "No text to parse"
+        Nothing -> Left ""
         Just csvCols -> 
           case getDataCol opts of
             Just dataIdx -> 
@@ -48,7 +49,7 @@ categoriseCsvLine trained opts (CleanedLine (RawText origText) (CleanedText clea
   let classified = classify opts trained cleanedText in
   Right [case classified of
            Just (Category cat, tfidf) -> 
-             createCsvLine (csvRows <> [cat, show tfidf, cleanedText])
+             createCsvLine (csvRows <> [cat, showTfIdfVal tfidf, cleanedText])
            Nothing -> 
              createCsvLine (csvRows <> ["-", "0", cleanedText])
         ]

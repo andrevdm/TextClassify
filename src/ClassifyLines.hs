@@ -9,6 +9,7 @@ module ClassifyLines
 import           Protolude
 import qualified Data.Text as Txt
 import qualified Data.List as Lst
+import           Text.Printf (printf)
 import           TfIdf
 import           Classify
 
@@ -23,7 +24,7 @@ classifyLineSimple trained origLine cleanedLine =
   let (cats, t, cl) = classifyLine trained origLine cleanedLine in
   Right $ case Lst.take 1 cats of
             [] -> ["unmatched: " <> t <> " ** " <> cl]
-            [(Category c, d)] -> [c <> ": " <> t <> " @" <> show d <> " ** " <> cl]
+            [(Category c, d)] -> [c <> ": " <> t <> " @" <> showTfIdfVal d <> " ** " <> cl]
 
 classifyLineDetail :: TrainedData -> Text -> Text -> Either Text [Text]
 classifyLineDetail trained origLine cleanedLine =
@@ -35,5 +36,5 @@ classifyLineDetail trained origLine cleanedLine =
   where
     catTxt :: (Category, Double) -> Text
     catTxt (Category cat, tfidf) =
-      "  = " <> cat <> ": " <> show tfidf
+      "  = " <> cat <> ": " <> showTfIdfVal tfidf
   

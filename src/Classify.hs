@@ -5,6 +5,7 @@ module Classify
   (getWords
   ,classify
   ,classifyDetail
+  ,showTfIdfVal
   ,ParsedLine (..)
   ,CleanedLine (..)
   ,RawText (..)
@@ -16,6 +17,7 @@ import Data.Map.Strict (Map)
 import qualified Data.Text as Txt
 import qualified Data.Map.Strict as Map
 import qualified Data.List as Lst
+import Text.Printf
 import qualified Args
 import TfIdf 
 
@@ -42,3 +44,7 @@ getWords txt =
   let words = Txt.words txt in
   let nonEmptyWords = filter (not . Txt.null) words in
   Lst.nub nonEmptyWords
+
+showTfIdfVal :: Double -> Text
+showTfIdfVal d =
+  Txt.pack $ printf "%.4f" d

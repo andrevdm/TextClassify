@@ -16,8 +16,8 @@ import           System.IO
 import           System.Process
 import           Options.Generic
 
-data Arguments = Arguments {train :: [Char] <?> "Path to training data"
-                           ,input :: Maybe [Char] <?> "Input file to categorise. If missing stdin will be used"
+data Arguments = Arguments {train :: Text <?> "Path to training data"
+                           ,input :: Maybe Text <?> "Input file to categorise. If missing stdin will be used"
                            ,parser :: Maybe Text <?> "Parser type, defaults to lines. Options are lines/detail/csv"
                            ,popts :: Maybe Text <?> "Parser options"
                            ,clean :: Maybe Text <?> "Options name of text cleaner - see docs"
@@ -38,11 +38,11 @@ getOptions = do
   cleaner <- getCleaner (unHelpful (clean args)) 
   hin_ <- case unHelpful $ input args of
              Just t -> 
-               openFile t ReadMode
+               openFile (Txt.unpack t) ReadMode
              Nothing ->
                 pure stdin
 
-  pure Options {trainingPath = Txt.pack $ unHelpful (train args)
+  pure Options {trainingPath = unHelpful (train args)
                ,parserType = fromMaybe "lines" $ unHelpful (parser args)
                ,parserOptions = unHelpful (popts args)
                ,txtCleaner = cleaner

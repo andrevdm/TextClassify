@@ -22,12 +22,19 @@ import qualified System.IO as IO
 
 main :: IO ()
 main = do
+  -- | Get the parsed command line options
   opts <- Args.getOptions
 
+
+  -- | Load the training set
   trainingSet <- loadTrainingSet opts . Txt.unpack $ Args.trainingPath opts
+  -- | Get the trained data from the training set
   let trained = train trainingSet
+
+  -- | Get the name of the selected parser
   let parser = Txt.toLower $ Args.parserType opts 
 
+  -- | The CSV parser need to read the first line as the header before the remainder of the input is classified 
   if parser == "csv"
   then do
     h <- IO.hGetLine $ Args.hin opts
@@ -35,9 +42,13 @@ main = do
   else 
     pure ()
 
+  -- | Read input a line at a time and pass it to the parser
   whileM_ (not <$> IO.hIsEOF (Args.hin opts)) $ do
+    -- | line of data
     origChars <- IO.hGetLine $ Args.hin opts
     let origLine = Txt.pack origChars
+    
+    -- | parse the line and get the results to display
     parsed <- case parser of
                 "lines" -> do 
                   cleanedLine <- Args.txtCleaner opts origLine 
@@ -46,6 +57,9 @@ main = do
                   cleanedLine <- Args.txtCleaner opts origLine 
                   pure $ CLine.classifyLineDetail trained origLine cleanedLine 
                 "csv" -> 
+                  -- | The CSV parser workds in two steps
+                  -- | 1. Parse the CSV and get the text to classify 
+                  -- | 2. Classify the cleaned text
                   case CCsv.parseCsvLine trained opts origLine of
                     Right (ParsedLine (RawText rawText) csv) -> do
                       cleanedText <- Args.txtCleaner opts rawText
@@ -55,6 +69,7 @@ main = do
                 x -> 
                   pure $ Left ("unknown parser " <> x)
     
+    -- | Display result or error
     case parsed of
       Right lines -> putText $ Txt.intercalate "\n" lines
       Left error -> IO.hPutStrLn stderr $ Txt.unpack error

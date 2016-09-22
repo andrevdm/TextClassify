@@ -13,12 +13,14 @@ import           Text.Printf (printf)
 import           TfIdf
 import           Classify
 
-classifyLine :: TrainedData -> Text -> Text -> ([(Category, Double)], Text, Text )
+-- | Classify a line of data
+classifyLine :: TrainedData -> Text -> Text -> ([(Category, Double)], Text, Text)
 classifyLine trained origLine cleanedLine = do
   let classified = classifyDetail trained cleanedLine 
   let classifiedNonZero = filter (\(c,v) -> v > 0) classified
   (classifiedNonZero, origLine, cleanedLine)
 
+-- | Classify a line of data an try get the best match
 classifyLineSimple :: TrainedData -> Text -> Text -> Either Text [Text]
 classifyLineSimple trained origLine cleanedLine =
   let (cats, t, cl) = classifyLine trained origLine cleanedLine in
@@ -26,6 +28,7 @@ classifyLineSimple trained origLine cleanedLine =
             [] -> ["unmatched: " <> t <> " ** " <> cl]
             [(Category c, d)] -> [c <> ": " <> t <> " @" <> showTfIdfVal d <> " ** " <> cl]
 
+-- | Classify a line of data an return all matches
 classifyLineDetail :: TrainedData -> Text -> Text -> Either Text [Text]
 classifyLineDetail trained origLine cleanedLine =
   let (cats, txt, cleaned) = classifyLine trained origLine cleanedLine in

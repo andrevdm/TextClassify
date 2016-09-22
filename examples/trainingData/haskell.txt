@@ -27,3 +27,5 @@ type family
 type instance
 where
 case
+putText
+on

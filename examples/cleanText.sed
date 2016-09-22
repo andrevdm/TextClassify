@@ -1,5 +1,5 @@
 #!/bin/sed -uf
-s/c\*/ /gi
+s/\[cC\]\*/ /gi
 s/jan\|feb\|mar\|apr\|may\|jun\|jul\|aug\|sep\|oct\|nov\|dec/ /gi
 s/ \+$//gi
 s/[0-9]\{2\}$//gi

@@ -22,7 +22,7 @@ import qualified Args
 -- | Add a header column for each of the new columns that will be  added
 createHeader :: Text -> Text
 createHeader h =
-  h <> "_Category,_TfIdf,_MatchText"
+  h <> ",_Category,_TfIdf,_MatchText"
 
 -- | Get a **ParsedLine a** for a line of CSV data. The 'a' is set to the columns
 -- | The classification is done in categoriseCsvLines

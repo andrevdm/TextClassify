@@ -1,0 +1,8 @@
+null readonly module
+module putText sizeof
+string
+null readonly module
+module putText sizeof
+string
+as
+C*as

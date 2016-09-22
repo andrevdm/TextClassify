@@ -52,6 +52,7 @@ The examples folder contains scripts showing how txtcls can be used. The files a
  1. demoLines.sh - run the example on egLines.txt  
  1. demoDetail.sh - run the example on egLines.txt using the detail output 
  1. demoCsvWithHeader.sh - run the example on egCsvWithHeader.csv
+ 1. demoDetailInteractive.sh - run the detail parser interactively, read a line from stdin and write to stdout
  1. trainingData/cs.txt
  1. trainingData/hasekll.txt
 
